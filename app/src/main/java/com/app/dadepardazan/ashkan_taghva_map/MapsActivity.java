@@ -58,7 +58,8 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     TextView tv1;
     Switch lock_lock;
     boolean is_lcok=true;
-    boolean test=false;
+    boolean test = false;
+    boolean test2 = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
