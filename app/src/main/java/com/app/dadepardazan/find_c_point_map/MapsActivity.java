@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -12,6 +13,7 @@ import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
 import android.view.MotionEvent;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -20,6 +22,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.FragmentActivity;
 
@@ -62,7 +65,7 @@ import java.util.Map;
 
 public class
 MapsActivity extends FragmentActivity implements OnMapReadyCallback {
-
+    ImageView img_setting;
     private GoogleMap mMap;
     ImageView find_place;
     final Handler handler = new Handler();
@@ -70,6 +73,9 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     LatLng sydney;
     TextView tv1;
+    TextView tv_satellite;
+    TextView tv_temperature;
+    TextView tv_pressure;
     SharedPreferences setting;
     TextView tv2;
     TextView tv3;
@@ -81,8 +87,15 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
     TextView tv9;
     boolean is_lcok = true;
     double angleA = 51.7;
+    double elevationA = 00.0;
+    double elevationC = 00.0;
     double angleB = 51.7;
+    double angleZ = 00.0;
     double sensor_angle = 51.7;
+    String temperature;
+    String pressure;
+    String satellite;
+
     double anglemen = 0;
     Polyline lineA = null;
     Polyline lineB = null;
@@ -213,7 +226,36 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
         });
         offset = setting.getFloat("offset", 0.0f);
 
+        img_setting.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                startActivityForResult(new Intent(MapsActivity.this, SettingActivity.class), 1);
+            }
+        });
+
+
+    }
+
+    public String decimalToDMS(double decimalDegree, boolean isLatitude) {
+        String direction = isLatitude ? (decimalDegree >= 0 ? "N" : "S") : (decimalDegree >= 0 ? "E" : "W");
+        decimalDegree = Math.abs(decimalDegree);
+
+        int degrees = (int) decimalDegree;
+        double minutesDecimal = (decimalDegree - degrees) * 60;
+        int minutes = (int) minutesDecimal;
+        double seconds = (minutesDecimal - minutes) * 60;
+
+        return String.format("%d°%d'%f\"%s", degrees, minutes, seconds, direction);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_OK) {
+            startActivity(new Intent(this, MapsActivity.class));
+            finish();
+        }
     }
 
     private void findviewbyid() {
@@ -224,6 +266,10 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
         tv7 = findViewById(R.id.tv7);
         tv8 = findViewById(R.id.tv8);
         tv9 = findViewById(R.id.tv9);
+        img_setting = findViewById(R.id.img_setting);
+        tv_satellite = findViewById(R.id.tv_satellite);
+        tv_temperature = findViewById(R.id.tv_temperature);
+        tv_pressure = findViewById(R.id.tv_pressure);
 
         image_add = findViewById(R.id.image_add);
         image_minus = findViewById(R.id.image_minus);
@@ -532,7 +578,11 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
             if (pointA != null && pointC != null) {
                 tv3.setText("فاصله دیده بان تا هدف:" + SphericalUtil.computeDistanceBetween(pointC, pointA));
             }
-            tv9.setText("طول جغرافیایی نقطه هدف:" + pointC.latitude + "\n" + "عرض جغرافیایی نقطه هدف:" + pointC.longitude);
+            if (setting.getString("unit", "").equals("DMS")) {
+                tv9.setText("طول جغرافیایی نقطه هدف:" + decimalToDMS(pointC.latitude, true) + "\n" + "عرض جغرافیایی نقطه هدف:" + decimalToDMS(pointC.longitude, false));
+            } else {
+                tv9.setText("طول جغرافیایی نقطه هدف:" + pointC.latitude + "\n" + "عرض جغرافیایی نقطه هدف:" + pointC.longitude);
+            }
         }
 
         // جابه‌جا کردن دوربین به اولین نقطه
@@ -656,14 +706,37 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
             markerC = mMap.addMarker(new MarkerOptions().position(pointC).title("Point C").icon(BitmapDescriptorFactory.fromResource(R.drawable.target_icon)));
         //  markerC = mMap.addMarker(new MarkerOptions().position(endPointA).title("Point C"));
         tv3.setText("فاصله: دیده بان تا هدف:" + distance);
-        tv1.setText("طول جغرافیایی نقطه دیده بان:" +
+        tv_pressure.setText(pressure);
+        tv_temperature.setText(temperature);
+        tv_satellite.setText(satellite);
 
-                +pointA.latitude +
-                "\n" +
-                " عرض جغرافیایی نقطه دیده بان:" + pointA.longitude +
-                "زاویه:" + String.format("%.2f", angleA));
+        if (setting.getString("unit", "").equals("DMS")) {
+            tv1.setText("طول جغرافیایی نقطه دیده بان:"
+
+                    + decimalToDMS(pointA.latitude, true) +
+                    "\n" +
+                    " عرض جغرافیایی نقطه دیده بان:" + decimalToDMS(pointA.longitude, false) + "\n" +
+                    "زاویه:" + String.format("%.2f", angleA) + "\n" +
+                    "ارتفاع :" + elevationA
+            );
+        } else {
+            tv1.setText("طول جغرافیایی نقطه دیده بان:" +
+
+                    +pointA.latitude +
+                    "\n" +
+                    " عرض جغرافیایی نقطه دیده بان:" + pointA.longitude + "\n" +
+                    "زاویه:" + String.format("%.2f", angleA) + "\n" +
+                    "ارتفاع :" + elevationA);
+        }
         if (pointC != null) {
-            tv9.setText("طول جغرافیایی نقطه هدف:" + pointC.latitude + "\n" + "عرض جغرافیایی نقطه هدف:" + pointC.longitude);
+            if (setting.getString("unit", "").equals("DMS")) {
+                tv9.setText("طول جغرافیایی نقطه هدف:" + decimalToDMS(pointC.latitude, true) + "\n" + "عرض جغرافیایی نقطه هدف:" + decimalToDMS(pointC.longitude, false)
+                        + "\n" +
+                        "ارتفاع :" + calculateHeightB());
+            } else {
+                tv9.setText("طول جغرافیایی نقطه هدف:" + pointC.latitude + "\n" + "عرض جغرافیایی نقطه هدف:" + pointC.longitude + "\n" +
+                        "ارتفاع :" + calculateHeightB());
+            }
         }
 
         //  lineA.setVisible(false);
@@ -861,6 +934,16 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 //                .addToRequestQueue(jsonObjReq, tag_json_obj);
     }
 
+    private double calculateHeightB() {
+        // تبدیل زاویه به رادیان
+        double angleInRadians = Math.toRadians(-angleZ);
+        Log.e("angleZ", angleZ + "");
+        Log.e("angleZ", Math.tan(angleInRadians) + "");
+        Log.e("distance", distance + "");
+        Log.e("elevationA", elevationA + "");
+        // محاسبه ارتفاع B
+        return elevationA + (distance * Math.tan(angleInRadians));
+    }
     @Override
     protected void onPause() {
 
@@ -897,7 +980,7 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
             ArrayList<NameValuePair> namevaluepairs = new ArrayList<NameValuePair>();
             final JSONObject get_ad_list = new JSONObject();
             try {
-                get_ad_list.put("limit", "10");
+                get_ad_list.put("offset", offset);
             } catch (JSONException e) {
                 e.printStackTrace();
             } catch (Exception e) {
@@ -941,6 +1024,11 @@ MapsActivity extends FragmentActivity implements OnMapReadyCallback {
                                 double temp_angle = 0;
 //                                if (jsonObject.getDouble("angle")>0) {
                                 sensor_angle = jsonObject.getDouble("angle");
+                                temperature = jsonObject.getString("temperature");
+                                pressure = jsonObject.getString("pressure");
+                                satellite = jsonObject.getString("sat");
+                                elevationA = jsonObject.getDouble("elevation ");
+                                angleZ = jsonObject.getDouble("angleZ");
 //                                }else
 //                                    temp_angle= jsonObject.getDouble("angle")+360;
 //                                temp_angle=-360+temp_angle-anglemen;

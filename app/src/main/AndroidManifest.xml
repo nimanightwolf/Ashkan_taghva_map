@@ -12,12 +12,19 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.find_c_point_map"
         android:usesCleartextTraffic="true">
-        <activity
-            android:label="@string/title_activity_maps"
-            android:name="com.app.dadepardazan.find_c_point_map.Splash"
-            android:screenOrientation="portrait"
-            android:exported="true">
+        <activity android:name=".SettingActivity" />
+        <activity android:name=".LoginActivity" />
 
+        <activity
+            android:name=".Splash"
+            android:exported="true"
+            android:label="@string/title_activity_maps"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
         </activity>
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
@@ -35,15 +42,10 @@
             android:value="AIzaSyArQNqYBO_soV7GRspbRspb3Cfp0_tASYo" />
 
         <activity
-            android:name="com.app.dadepardazan.find_c_point_map.MapsActivity"
+            android:name=".MapsActivity"
             android:exported="true"
             android:label="@string/title_activity_maps"
             android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
     </application>
 

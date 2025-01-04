@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background with slight transparency -->
+    <solid android:color="#E657BD5B" />
+
+    <!-- More pronounced rounded corners for distance indicators -->
+    <corners android:radius="8dp" />
+
+    <!-- Distinctive border -->
+    <stroke
+        android:width="1.5dp"
+        android:color="#45A049" />
+
+    <!-- Gradient for depth effect -->
+    <gradient
+        android:angle="135"
+        android:endColor="#57BD5B"
+        android:startColor="#68CD6C"
+        android:type="linear" />
+
+    <!-- Inner padding -->
+    <padding
+        android:bottom="6dp"
+        android:left="12dp"
+        android:right="12dp"
+        android:top="6dp" />
+</shape>
